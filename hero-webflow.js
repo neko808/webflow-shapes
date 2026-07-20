@@ -79,23 +79,6 @@ function matteMat() {
 
 // ---- Shape builders ---------------------------------------------------------
 
-function swirl(mat) {
-  const geo = new THREE.SphereGeometry(1.22, 160, 160);
-  const pos = geo.attributes.position;
-  const v = new THREE.Vector3();
-  for (let i = 0; i < pos.count; i++) {
-    v.fromBufferAttribute(pos, i);
-    const theta = Math.acos(THREE.MathUtils.clamp(v.z / v.length(), -1, 1));
-    const phi = Math.atan2(v.y, v.x);
-    const lobes = Math.sin(9 * phi + 4.2 * theta);
-    const taper = Math.pow(Math.sin(theta), 0.6);
-    v.multiplyScalar(1 + 0.16 * lobes * taper);
-    pos.setXYZ(i, v.x, v.y, v.z);
-  }
-  geo.computeVertexNormals();
-  return new THREE.Mesh(geo, mat);
-}
-
 function voxelU(mat) {
   const boxes = [];
   const cells = [
@@ -282,16 +265,19 @@ const shapes = [
   makeShape((m) => new THREE.Mesh(new RoundedBoxGeometry(1.9, 1.9, 1.9, 6, 0.18), m),
                            [ 8, 0, 0], true,  5,   false),
   makeShape(letterM,       [ 8, 0, 0], true,  10,  false),
-  makeShape(swirl,         [-8, 0, 0], false, 0,   true),
   makeShape((m) => new THREE.Mesh(new THREE.CapsuleGeometry(0.6, 1.55, 12, 32), m),
                            [-8, 0, 0], false, 20,  true),
 ];
 
 const GLB_MODELS = [
-  { url: 'maceta.glb', home: [-8, 0, 0], fromLeft: false, delay: 15, gummy: true, size: 3.27 },
+  // Original raymonafa.com bumpy sphere (their "h" letter), replacing the
+  // procedural swirl. Clean single shell with authored normals.
+  { url: 'h.glb',      home: [-8, 0, 0], fromLeft: false, delay: 0,  gummy: true, size: 2.8 },
   { url: 'cross.glb',  home: [-8, 0, 0], fromLeft: false, delay: 30, gummy: true, size: 2.57 },
   { url: 'crosstube.glb', home: [-8, 0, 0], fromLeft: false, delay: 10, gummy: true, size: 2.9 },
-  { url: 'asterisk21.glb', home: [-8, 0, 0], fromLeft: false, delay: 40, gummy: true, size: 3.45, union: true },
+  // Original raymonafa.com asterisk (their "e" letter), Draco-decoded to a
+  // plain .glb. Single clean shell with authored normals -> no union/smooth.
+  { url: 'e.glb', home: [-8, 0, 0], fromLeft: false, delay: 40, gummy: true, size: 3.45 },
 ];
 
 for (const m of GLB_MODELS) {
