@@ -48,6 +48,13 @@ scene.environmentIntensity = 0.5;
 const camera = new THREE.PerspectiveCamera(22.5, 1, 1, 80);
 camera.position.set(0, 0, 16);
 
+// How much of the world (half-size, in world units) is kept in view on the
+// SHORTER axis of the hero container. The camera zooms to fit this, so the
+// shapes stay a consistent on-screen size whether the hero is wide, tall, or
+// square. SMALLER number = bigger shapes (zoom in); larger = smaller shapes.
+// The full-window demo effectively frames ~3.2 here; 2.4 makes them bigger.
+const FRAME_RADIUS = 2.4;
+
 scene.add(new THREE.AmbientLight(0xffffff, 0.25));
 const key = new THREE.DirectionalLight(0xffffff, 0.8);
 key.position.set(4, 8, 6);
@@ -328,10 +335,16 @@ function resize() {
   const w = Math.max(1, container.clientWidth);
   const h = Math.max(1, container.clientHeight);
   renderer.setSize(w, h, false);
-  camera.aspect = w / h;
+  const aspect = w / h;
+  camera.aspect = aspect;
+  // Zoom so FRAME_RADIUS fills the shorter axis: on a wide/short hero the
+  // vertical axis binds, on a tall/narrow one the horizontal axis binds.
+  halfH = FRAME_RADIUS / Math.min(aspect, 1);
+  halfW = halfH * aspect;
+  camera.fov = 2 * THREE.MathUtils.radToDeg(
+    Math.atan(halfH / camera.position.z)
+  );
   camera.updateProjectionMatrix();
-  halfH = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z;
-  halfW = halfH * camera.aspect;
 }
 new ResizeObserver(resize).observe(container);
 resize();
